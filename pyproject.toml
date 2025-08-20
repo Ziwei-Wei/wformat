@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rd-format"
+version = "1.0.0"
+license = { text = "MIT" }
+authors = [{ name = "Ziwei Wei" }]
+requires-python = ">=3.8"
+readme = "README.md"
+description = "Opinionated formatter for RdCore"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+]
+
+[project.scripts]
+rd-format = "rd_format.cli_app:cli_app"
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+build = ["build", "twine", "pyinstaller>=6.15,<7"]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+rd_format = ["data/*", "bin/*"]
+
+[tool.pytest.ini_options]
+addopts = "-s"

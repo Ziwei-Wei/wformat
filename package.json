@@ -1,0 +1,35 @@
+{
+    "name": "rd-format-vscode",
+    "displayName": "rd-format",
+    "description": "An opinionated code formatter for RdCore.",
+    "publisher": "ziweiwei",
+    "license": "MIT",
+    "version": "1.0.0",
+    "engines": {
+        "vscode": "^1.84.0"
+    },
+    "categories": [
+        "Formatters"
+    ],
+    "activationEvents": [
+        "onLanguage:cpp"
+    ],
+    "main": "./dist/vscode.js",
+    "files": [
+        "dist/**",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "vscode:prepublish": "tsc -p .",
+        "compile": "tsc -p .",
+        "watch": "tsc -w -p .",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.7",
+        "@types/vscode": "^1.84.0",
+        "typescript": "^5.4.0",
+        "vsce": "^2.15.0"
+    }
+}

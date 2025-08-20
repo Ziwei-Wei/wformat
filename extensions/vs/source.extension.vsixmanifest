@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+    <Metadata>
+        <!-- Unique identity for this extension. You can regenerate this GUID if needed -->
+        <Identity Id="RdFormatVS.8f7c9d1d-2a5f-4a8b-9a3c-b2f6a2a1d5e1" Version="1.0"
+            Language="en-US" Publisher="YourName" />
+        <DisplayName>rd-format for Visual Studio</DisplayName>
+        <Description xml:space="preserve">Formats C/C++ files using the rd-format daemon.</Description>
+        <MoreInfo>https://example.com</MoreInfo>
+    </Metadata>
+
+    <Installation AllUsers="false">
+        <!-- This targets Visual Studio 2022 -->
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)" />
+    </Installation>
+
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor"
+            Version="[17.0,18.0)"
+            DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+
+    <Assets>
+        <!-- The extension assembly -->
+        <Asset Type="Microsoft.VisualStudio.VsPackage"
+            Path="bin\%(Configuration)\%(Platform)\RdFormatVS.dll" />
+    </Assets>
+</PackageManifest>

@@ -1,0 +1,10 @@
+{
+    "cmake.generator": "Ninja",
+    "cSpell.words": [
+        "pypi",
+        "sdist",
+        "uncrustify"
+    ],
+    "python.analysis.extraPaths": ["./src"],
+    "python.analysis.indexing": true
+}
