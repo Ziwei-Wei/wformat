@@ -121,4 +121,14 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <Target Name="CleanAllExperimentalExtensions" BeforeTargets="Build">
+    <PropertyGroup>
+      <VsLocalRoot>$(LocalAppData)\Microsoft\VisualStudio</VsLocalRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <ExpExtensionDirs Include="$(VsLocalRoot)\*Exp\Extensions\*" />
+    </ItemGroup>
+    <Message Text="Purging experimental instance extensions: @(ExpExtensionDirs)" Importance="High" />
+    <RemoveDir Directories="@(ExpExtensionDirs)" ContinueOnError="WarnAndContinue" />
+  </Target>
 </Project>
