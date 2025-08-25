@@ -9,7 +9,7 @@ license = { text = "MIT" }
 authors = [{ name = "Ziwei Wei" }]
 requires-python = ">=3.8"
 readme = "README.md"
-description = "Opinionated formatter for RdCore"
+description = "Opinionated code formatter for C++ code."
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License"

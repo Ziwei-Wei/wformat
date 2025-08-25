@@ -1,7 +1,7 @@
 {
     "name": "wformat-vscode",
     "displayName": "wformat",
-    "description": "An opinionated code formatter for RdCore.",
+    "description": "Opinionated code formatter for C++ code.",
     "publisher": "Ziwei Wei",
     "license": "MIT",
     "version": "1.0.0",
