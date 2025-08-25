@@ -87,6 +87,29 @@ try {
     $msbuild = "msbuild"
     if (-not (Get-Command $msbuild -ErrorAction SilentlyContinue)) { Write-Err "msbuild not found in PATH"; exit 1 }
 
+    # Restore NuGet packages for the project so build has required dependencies (VSSDK packages etc.)
+    try {
+        Write-Info "Restoring NuGet packages for $Project"
+        $nugetCmd = (Get-Command nuget -ErrorAction SilentlyContinue)?.Source
+        if ($nugetCmd) {
+            Write-Info "Using nuget: $nugetCmd"
+            & $nugetCmd restore $Project
+            if ($LASTEXITCODE -ne 0) { Write-Err "nuget restore failed."; exit $LASTEXITCODE }
+        } else {
+            Write-Info "nuget not found; attempting msbuild restore"
+            $restoreArgs = @(
+                $Project,
+                '/t:Restore',
+                "/p:Configuration=$Configuration",
+                "/p:Platform=$Platform"
+            )
+            & $msbuild @restoreArgs
+            if ($LASTEXITCODE -ne 0) { Write-Err "msbuild restore failed."; exit $LASTEXITCODE }
+        }
+    } catch {
+        Write-Warn "Package restore encountered an error: $_"
+    }
+
     $msbuildArgs = @(
         $Project,
         '/t:Rebuild',
