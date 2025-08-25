@@ -2,7 +2,7 @@
     "name": "wformat-vscode",
     "displayName": "wformat",
     "description": "Opinionated code formatter for C++ code.",
-    "publisher": "Ziwei Wei",
+    "publisher": "ziwei-wei",
     "license": "MIT",
     "version": "1.0.0",
     "repository": {
