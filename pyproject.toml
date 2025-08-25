@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wformat"
 version = "0.0.1"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Ziwei Wei" }]
 requires-python = ">=3.8"
 readme = "README.md"
 description = "Opinionated code formatter for C++ code."
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License"
+    "Programming Language :: Python :: 3"
 ]
 
 [project.scripts]
