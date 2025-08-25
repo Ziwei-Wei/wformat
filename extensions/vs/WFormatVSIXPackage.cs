@@ -18,8 +18,7 @@ namespace WFormatVSIX
     {
         public const string PackageGuidString = "00870c79-a09d-4f89-a4d1-ef8790a9d79f";
 
-        private CommandEvents _formatDocumentEvents;
-        private CommandEvents _formatSelectionEvents;
+        private CommandEvents _formatDocumentEvents; // Only hook document formatting now
 
         private OptionsPage OptionsPage => (OptionsPage)GetDialogPage(typeof(OptionsPage));
 
@@ -40,7 +39,6 @@ namespace WFormatVSIX
             try
             {
                 if (_formatDocumentEvents != null) _formatDocumentEvents.BeforeExecute -= OnFormatBeforeExecute;
-                if (_formatSelectionEvents != null) _formatSelectionEvents.BeforeExecute -= OnFormatBeforeExecute;
             }
             catch { }
             base.Dispose(disposing);
@@ -54,9 +52,7 @@ namespace WFormatVSIX
             var events = dte.Events; if (events == null) return;
             string vsStd2KGuid = VSConstants.VSStd2K.ToString("B");
             _formatDocumentEvents = events.get_CommandEvents(vsStd2KGuid, (int)VSConstants.VSStd2KCmdID.FORMATDOCUMENT);
-            _formatSelectionEvents = events.get_CommandEvents(vsStd2KGuid, (int)VSConstants.VSStd2KCmdID.FORMATSELECTION);
             if (_formatDocumentEvents != null) _formatDocumentEvents.BeforeExecute += OnFormatBeforeExecute;
-            if (_formatSelectionEvents != null) _formatSelectionEvents.BeforeExecute += OnFormatBeforeExecute;
         }
 
         private void OnFormatBeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)

@@ -172,9 +172,9 @@ namespace WFormatVSIX
             if (buffer == null) return false;
 
             var snapshot = buffer.CurrentSnapshot;
-            SnapshotSpan span = (!view.Selection.IsEmpty && view.Selection.SelectedSpans.Count > 0)
-                ? view.Selection.SelectedSpans[0]
-                : new SnapshotSpan(snapshot, 0, snapshot.Length);
+            // Always format the entire document; ignore any selection.
+            view.Selection.Clear(); // ensure no selection logic is relied upon downstream
+            SnapshotSpan span = new SnapshotSpan(snapshot, 0, snapshot.Length);
             string originalText = span.GetText() ?? string.Empty;
 
             ITrackingSpan tracking = snapshot.CreateTrackingSpan(span, SpanTrackingMode.EdgeInclusive);
@@ -197,7 +197,7 @@ namespace WFormatVSIX
             buffer.Changed += changedHandler;
 
             _formattingInProgress = true;
-            Logger.Log("Queued format (editor tracking)" + (view.Selection.IsEmpty ? "" : " selection"));
+            Logger.Log("Queued format (whole document)");
 
             _ = jtf.RunAsync(async delegate
             {
@@ -240,12 +240,7 @@ namespace WFormatVSIX
                         edit.Replace(currentSpan.Span, formatted);
                         edit.Apply();
                     }
-                    if (!view.Selection.IsEmpty)
-                    {
-                        var newSpan = tracking.GetSpan(buffer.CurrentSnapshot);
-                        view.Selection.Select(newSpan, false);
-                    }
-                    Logger.Log("Format applied (tracking)");
+                    Logger.Log("Format applied (whole document)");
                 }
                 catch (Exception ex)
                 {

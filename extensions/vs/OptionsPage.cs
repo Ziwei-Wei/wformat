@@ -7,7 +7,7 @@ namespace WFormatVSIX
     {
         [Category("Formatting")]
         [DisplayName("Override default formatter")]
-        [Description("If true, the extension replace Visual Studio's built-in Format Document and Format Selection. If false, only use \"Run WFormat\" in the right click menu.")]
+        [Description("If true, the extension replaces Visual Studio's built-in Format Document command. If false, only use 'Run WFormat' in the right click menu.")]
         public bool OverrideDefaultFormat { get; set; } = false;
     }
 }
