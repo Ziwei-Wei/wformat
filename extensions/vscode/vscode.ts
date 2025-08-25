@@ -125,9 +125,10 @@ async function requestFormat(
     });
 }
 
-async function format(
+async function formatSelection(
     out: vscode.OutputChannel,
     doc: vscode.TextDocument,
+    range: vscode.Range,
     token: vscode.CancellationToken,
 ): Promise<vscode.TextEdit[]> {
     out.appendLine(`Formatting: ${doc.uri.fsPath} START`);
@@ -135,11 +136,10 @@ async function format(
 
     let edits: vscode.TextEdit[] = [];
     try {
-        const before = doc.getText();
+        const before = doc.getText(range);
         const after = await requestFormat(before, token, out);
         if (after !== before) {
-            const full = new vscode.Range(doc.positionAt(0), doc.positionAt(before.length));
-            edits = [vscode.TextEdit.replace(full, after)];
+            edits = [vscode.TextEdit.replace(range, after)];
         }
     } catch (e: any) {
         let msg = String(e?.message ?? e);
@@ -150,6 +150,15 @@ async function format(
 
     out.appendLine(`Formatting: ${doc.uri.fsPath} END (${(performance.now() - start).toFixed(1)} ms)`);
     return edits;
+}
+
+async function formatDocument(
+    out: vscode.OutputChannel,
+    doc: vscode.TextDocument,
+    token: vscode.CancellationToken,
+): Promise<vscode.TextEdit[]> {
+    const full = new vscode.Range(doc.positionAt(0), doc.positionAt(doc.getText().length));
+    return formatSelection(out, doc, full, token);
 }
 
 function resolveBinaryPath(context: vscode.ExtensionContext): string {
@@ -205,11 +214,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     const provider: vscode.DocumentFormattingEditProvider = {
         provideDocumentFormattingEdits: (doc: vscode.TextDocument, _opts: vscode.FormattingOptions, token: vscode.CancellationToken) =>
-            format(out, doc, token)
+            formatDocument(out, doc, token)
+    };
+
+    const rangeProvider: vscode.DocumentRangeFormattingEditProvider = {
+        provideDocumentRangeFormattingEdits: async (doc: vscode.TextDocument, range: vscode.Range, _opts: vscode.FormattingOptions, token: vscode.CancellationToken) => formatSelection(out, doc, range, token)
     };
 
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
+        vscode.languages.registerDocumentRangeFormattingEditProvider(selector, rangeProvider),
         out
     );
 }
