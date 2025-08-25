@@ -217,13 +217,8 @@ export function activate(context: vscode.ExtensionContext) {
             formatDocument(out, doc, token)
     };
 
-    const rangeProvider: vscode.DocumentRangeFormattingEditProvider = {
-        provideDocumentRangeFormattingEdits: async (doc: vscode.TextDocument, range: vscode.Range, _opts: vscode.FormattingOptions, token: vscode.CancellationToken) => formatSelection(out, doc, range, token)
-    };
-
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
-        vscode.languages.registerDocumentRangeFormattingEditProvider(selector, rangeProvider),
         out
     );
 }
