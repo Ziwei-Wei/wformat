@@ -23,7 +23,7 @@ jobs:
       matrix:
         include:
           - os: windows-2025
-            tag: win32-x64
+            tag: win-x64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout

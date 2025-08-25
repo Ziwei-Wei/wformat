@@ -23,7 +23,7 @@ jobs:
       matrix:
         include:
           - os: windows-2025
-            tag: win32-x64
+            tag: win-x64
           - os: macos-15
             tag: darwin-arm64
           - os: ubuntu-24.04
