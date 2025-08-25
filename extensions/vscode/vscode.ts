@@ -165,7 +165,7 @@ function resolveBinaryPath(context: vscode.ExtensionContext): string {
     const exeName = process.platform === "win32" ? "wformat.exe" : "wformat";
 
     const candidates: string[] = [];
-    if (process.platform === 'win32' && process.arch === 'x64') candidates.push('wformat-win32-x64');
+    if (process.platform === 'win32' && process.arch === 'x64') candidates.push('wformat-win-x64');
     if (process.platform === 'darwin' && process.arch === 'x64') candidates.push('wformat-darwin-x64');
     if (process.platform === 'darwin' && process.arch === 'arm64') candidates.push('wformat-darwin-arm64');
     if (process.platform === 'linux' && process.arch === 'x64') candidates.push('wformat-linux-x64');
