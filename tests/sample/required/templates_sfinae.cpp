@@ -1,4 +1,3 @@
-// Pattern source: traits + enable_if pattern
 #include <type_traits>
 #include <iostream>
 #include <string>

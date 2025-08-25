@@ -1,10 +1,14 @@
 {
-    "name": "rd-format-vscode",
-    "displayName": "rd-format",
+    "name": "wformat-vscode",
+    "displayName": "wformat",
     "description": "An opinionated code formatter for RdCore.",
-    "publisher": "ziweiwei",
+    "publisher": "Ziwei Wei",
     "license": "MIT",
     "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Ziwei-Wei/wformat.git"
+    },
     "engines": {
         "vscode": "^1.84.0"
     },

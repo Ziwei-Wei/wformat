@@ -1,4 +1,3 @@
-// Pattern source: custom deleter (FileCloser style)
 #include <cstdio>
 #include <memory>
 #include <iostream>

@@ -1,4 +1,3 @@
-// Pattern source: DECLARE_SMARTPOINTER & nested class usages
 #include <memory>
 #include <iostream>
 

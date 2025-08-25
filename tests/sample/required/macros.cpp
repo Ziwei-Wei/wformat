@@ -1,4 +1,3 @@
-// Pattern source inspiration: helper_macros.h enum streaming + basix enum_flags macro shapes
 #include <cstdint>
 #include <type_traits>
 #include <iostream>
@@ -22,10 +21,29 @@ DEFINE_FLAGS(Perm)
         }                              \
     } while(0)
 
+#define GSAL(_ANNOTATION_) _ANNOTATION_
+
+#define A(buf, bytes) \
+inline void \
+write(GSAL(const int) buf, size_t bytes)\
+
 struct R { void ping(){ std::cout<<"ping\n"; } };
 
 int main() {
     Perm p = Perm::Read | Perm::Exec;
     if ((p & Perm::Exec) == Perm::Exec) { std::cout << "exec set\n"; }
     R r; MULTI_LINE_INVOKE(&r, ping);
+
+    class Obj {
+    public:
+        void ACT() { std::cout << "Obj::act\n"; }
+    };
+    Obj* OBJ = new Obj();
+    do {
+        if ((OBJ) != nullptr)
+        {
+            (OBJ)->ACT();
+        }
+    } while(0);
 }
+

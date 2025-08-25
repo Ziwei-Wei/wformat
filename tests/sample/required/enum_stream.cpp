@@ -1,4 +1,3 @@
-// Pattern source: switch-based enum -> textual form (helper_macros streaming)
 #include <iostream>
 #include <cstdint>
 

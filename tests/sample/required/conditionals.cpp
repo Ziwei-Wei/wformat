@@ -1,4 +1,3 @@
-// Pattern source: conditional #ifdef / #else sections
 #include <iostream>
 
 int main()

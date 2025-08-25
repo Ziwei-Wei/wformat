@@ -1,0 +1,50 @@
+name: Build VS Code Extension (Artifacts Only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Override version (e.g. 1.2.3)."
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  EXT_BASE: wformat
+  VSIX_FILE: WFormatVSIX.vsix
+
+jobs:
+  build-binaries:
+    name: Build Binary (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            tag: win32-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment (composite action)
+        uses: ./.github/actions/setup-action
+
+      - name: Rename platform folder (append platform tag)
+        shell: bash
+        run: |
+          mkdir -p extensions/vs/dist/${{ matrix.tag }}
+          mv extensions/vs/dist/$EXT_BASE extensions/vs/dist/${{ matrix.tag }}/$EXT_BASE
+
+      - name: Build VSIX
+        shell: pwsh
+        run: ./scripts/build-vsix.ps1 -Version ${{ github.event.inputs.version }}
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-vsix
+          path: ${{ env.VSIX_FILE }}
+          if-no-files-found: error

@@ -1,0 +1,93 @@
+name: Build VS Code Extension (Artifacts Only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Override version (e.g. 1.2.3)."
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  EXT_BASE: wformat
+  VSIX_FILE: wformat-vscode.vsix
+
+jobs:
+  build-binaries:
+    name: Build Binary (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            tag: win32-x64
+          - os: macos-15
+            tag: darwin-arm64
+          - os: ubuntu-24.04
+            tag: linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment (composite action)
+        uses: ./.github/actions/setup-action
+
+      - name: Rename platform folder (append platform tag)
+        shell: bash
+        run: |
+          mv dist/$EXT_BASE dist/$EXT_BASE-${{ matrix.tag }}
+          ls -R dist/$EXT_BASE-${{ matrix.tag }}
+
+      - name: Upload platform artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.EXT_BASE }}-${{ matrix.tag }}
+          path: dist
+          if-no-files-found: error
+
+  package:
+    name: Package VSIX (all platforms bundled)
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    outputs:
+      vsix_name: ${{ steps.package.outputs.vsix_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ env.EXT_BASE }}-*
+          path: dist
+          merge-multiple: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Node deps
+        run: npm ci
+
+      - name: Set extension version
+        run: npm version --no-git-tag-version ${{ github.event.inputs.version }}
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Package VS Code extension (.vsix)
+        id: package
+        run: npx vsce package --no-yarn --out $VSIX_FILE
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-vsix
+          path: ${{ env.VSIX_FILE }}
+          if-no-files-found: error

@@ -1,0 +1,51 @@
+# Exclude everything not needed at runtime in the VS Code extension
+# Root-level filters (package.json `files` already whitelists dist/**, README.md, LICENSE,
+# but this extra layer protects against accidental inclusion and future changes.)
+
+# Build & tooling
+*.log
+build/**
+cmake-build*/**
+node_modules/**
+tools/**
+.tasks/**
+.github/**
+.vscode/**
+tests/**
+scripts/**
+
+# Source & dev artifacts
+src/**
+extensions/**
+**/*.ts
+tsconfig.json
+pyproject.toml
+setup.py
+wformat.spec
+package-lock.json
+COPILOT.md
+CMakeLists.txt
+.gitignore
+
+# Python build outputs not needed in extension
+dist/*.whl
+dist/*.tar.gz
+
+# Cache / misc
+__pycache__/**
+*.pyc
+.pytest_cache/**
+
+# Keep needed license/docs explicitly (negate rules if above patterns match)
+!LICENSE*
+!THIRD_PARTY_NOTICES.md
+!README.md
+
+# Keep runtime assets: platform-specific binaries under dist/wformat-* and compiled JS
+!dist/wformat-*/**
+!dist/**/*.js
+!dist/**/*.js.map
+!dist/**/*.json
+
+# Ensure we don't exclude the root dist directory itself
+!dist/

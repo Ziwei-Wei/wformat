@@ -10,6 +10,9 @@
         "rootDir": "extensions/vscode",
         "strict": true,
         "esModuleInterop": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "moduleResolution": "node",
+        "types": ["node", "vscode"],
+        "resolveJsonModule": true
     }
 }

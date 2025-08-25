@@ -1,4 +1,3 @@
-// Pattern source: SortLicensedProduct comparator style (decode.cpp)
 #include <cstdlib>
 #include <iostream>
 

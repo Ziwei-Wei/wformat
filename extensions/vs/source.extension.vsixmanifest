@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011"
+  xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <!-- Unique identity for this extension. You can regenerate this GUID if needed -->
-        <Identity Id="RdFormatVS.8f7c9d1d-2a5f-4a8b-9a3c-b2f6a2a1d5e1" Version="1.0"
-            Language="en-US" Publisher="YourName" />
-        <DisplayName>rd-format for Visual Studio</DisplayName>
-        <Description xml:space="preserve">Formats C/C++ files using the rd-format daemon.</Description>
-        <MoreInfo>https://example.com</MoreInfo>
+        <Identity Id="WFormat.64a4704e-0064-444a-9c27-dacff5575494" Version="0.0.1" Language="en-US"
+          Publisher="Ziwei Wei" />
+        <DisplayName>WFormat</DisplayName>
+        <Description xml:space="preserve">Opinionated code formatter for C++</Description>
     </Metadata>
-
-    <Installation AllUsers="false">
-        <!-- This targets Visual Studio 2022 -->
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)" />
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
     </Installation>
-
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework"
+          d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor"
-            Version="[17.0,18.0)"
-            DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)"
+          DisplayName="Visual Studio core editor" />
     </Prerequisites>
-
     <Assets>
-        <!-- The extension assembly -->
-        <Asset Type="Microsoft.VisualStudio.VsPackage"
-            Path="bin\%(Configuration)\%(Platform)\RdFormatVS.dll" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project"
+          d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     </Assets>
 </PackageManifest>

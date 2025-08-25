@@ -1,0 +1,100 @@
+name: Build & Publish wformat to (Test)PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Override version (e.g. 1.2.3)."
+        required: true
+      target:
+        description: "Where to publish"
+        type: choice
+        required: true
+        options: [test-pypi, pypi]
+        default: test-pypi
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            label: windows-x64
+          # - os: windows-11-arm
+          #   label: windows-arm64
+          - os: macos-15
+            label: macos-arm64
+          # - os: ubuntu-24.04
+          #   label: linux-x64
+          # - os: ubuntu-24.04-arm
+          #   label: ubuntu-24-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-action
+
+      - name: Clean dist (Windows)
+        if: matrix.os == 'windows-latest'
+        run: Remove-Item -Recurse -Force .\dist
+
+      - name: Clean dist (posix)
+        if: matrix.os != 'windows-latest'
+        run: rm -rf dist
+
+      - name: Install build tooling
+        if: ${{ github.event.inputs.version != '' }}
+        run: python -m pip install --upgrade pip toml
+
+      - name: Set version in pyproject.toml
+        if: ${{ github.event.inputs.version != '' }}
+        run: python scripts/set_version.py ${{ github.event.inputs.version }}
+
+      - name: Build wheels with cibuildwheel
+        uses: pypa/cibuildwheel@v3.1.2
+        env:
+          CIBW_BUILD: cp311-*
+          CIBW_VERBOSITY: "1"
+          # Set macOS deployment target so delocate will accept arm64 macOS binaries
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-15' && '15.0' || '' }}
+
+      - name: Upload wheelhouse/*.whl as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  publish:
+    name: Publish to (Test)PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish PyPI
+        if: inputs.target == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Publish TestPyPI
+        if: inputs.target == 'test-pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist
+          verbose: true
+          skip-existing: true

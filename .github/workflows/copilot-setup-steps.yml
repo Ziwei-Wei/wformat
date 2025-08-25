@@ -1,0 +1,39 @@
+name: "Copilot Setup Steps"
+
+# This workflow prepares the ephemeral environment used by the GitHub Copilot coding agent
+# so it doesn't have to guess how to set up dependencies. Only the job named
+# `copilot-setup-steps` is honored by Copilot.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - pyproject.toml
+      - package.json
+      - tsconfig.json
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - pyproject.toml
+      - package.json
+      - tsconfig.json
+
+jobs:
+  copilot-setup-steps:
+    # Windows is currently not supported yet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    # Least privileges needed for setup. Copilot gets its own token afterwards.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-action

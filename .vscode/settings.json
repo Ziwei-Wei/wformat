@@ -3,8 +3,10 @@
     "cSpell.words": [
         "pypi",
         "sdist",
-        "uncrustify"
+        "uncrustify",
+        "wformat"
     ],
     "python.analysis.extraPaths": ["./src"],
-    "python.analysis.indexing": true
+    "python.analysis.indexing": true,
+    "sarif-viewer.connectToGithubCodeScanning": "off"
 }

@@ -1,0 +1,40 @@
+# Enforce LF for source/config files to avoid Windows CRLF issues in formatting tools
+*.py          text eol=lf
+*.ts          text eol=lf
+*.tsx         text eol=lf
+*.js          text eol=lf
+*.json        text eol=lf
+*.toml        text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.cfg         text eol=lf
+*.clang-format text eol=lf
+*.cmake       text eol=lf
+CMakeLists.txt text eol=lf
+*.md          text eol=lf
+*.txt         text eol=lf
+
+# Treat these as binary
+*.exe         binary
+*.pdb         binary
+*.dll         binary
+*.whl         binary
+*.tar.gz      binary
+*.zip         binary
+*.png         binary
+*.jpg         binary
+*.ico         binary
+
+# Prevent attribute changes from re-touching large third-party vendored dirs
+build/**      -text
+dist/**       -text
+node_modules/** -text
+
+# Keep license notices normalized
+LICENSE       text eol=lf
+LICENSE.*     text eol=lf
+THIRD_PARTY_NOTICES.md text eol=lf
+
+# Explicitly enforce LF for your formatter configs
+src/wformat/data/uncrustify.cfg text eol=lf
+src/wformat/data/.clang-format  text eol=lf

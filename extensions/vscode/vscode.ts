@@ -1,3 +1,5 @@
+/// <reference types="vscode" />
+/// <reference types="node" />
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import * as fs from "fs";
@@ -23,23 +25,23 @@ function startDaemon(exePath: string, out: vscode.OutputChannel) {
         }
     );
 
-    out.appendLine(`${exePath} --serve`);
+    out.appendLine(`Start Daemon: ${exePath} --serve`);
 
-    g_daemon.on("error", (e) => {
+    g_daemon.on("error", (e: Error) => {
         out.appendLine(`daemon error: ${String(e)}`);
         for (const [, p] of g_pending_events) p.reject(e);
         g_pending_events.clear();
         g_daemon = null;
     });
 
-    g_daemon.on("exit", (code, sig) => {
+    g_daemon.on("exit", (code: number | null, sig: NodeJS.Signals | null) => {
         out.appendLine(`daemon exit code=${code} sig=${sig ?? ""}`);
         for (const [, p] of g_pending_events) p.reject(new Error("daemon exited"));
         g_pending_events.clear();
         g_daemon = null;
     });
 
-    g_daemon.stderr.on("data", d => out.appendLine(`stderr: ${d.toString()}`));
+    g_daemon.stderr.on("data", (d: Buffer) => out.appendLine(`stderr: ${d.toString()}`));
 
     g_daemon.stdout.on("data", (chunk: Buffer) => {
         g_stdoutBuf += chunk.toString();
@@ -64,7 +66,12 @@ function startDaemon(exePath: string, out: vscode.OutputChannel) {
                     }
 
                     if (msg.ok) {
-                        p.resolve(msg.text ?? "");
+                        try {
+                            const buf = Buffer.from(msg.b64, 'base64');
+                            p.resolve(buf.toString('utf8'));
+                        } catch {
+                            p.resolve("");
+                        }
                     } else {
                         p.reject(new Error(msg.error ?? "unknown error"));
                     }
@@ -93,7 +100,8 @@ async function requestFormat(
         }
 
         const id = g_nextId++;
-        const msg = JSON.stringify({ id, op: "format", text }) + "\n";
+        const b64 = Buffer.from(text, "utf8").toString("base64");
+        const msg = JSON.stringify({ id, op: "format", b64: b64 }) + "\n";
 
         g_pending_events.set(id, { resolve, reject });
 
@@ -122,8 +130,8 @@ async function format(
     doc: vscode.TextDocument,
     token: vscode.CancellationToken,
 ): Promise<vscode.TextEdit[]> {
-    const start = performance.now();
     out.appendLine(`Formatting: ${doc.uri.fsPath} START`);
+    const start = performance.now();
 
     let edits: vscode.TextEdit[] = [];
     try {
@@ -137,22 +145,39 @@ async function format(
         let msg = String(e?.message ?? e);
         if (msg === "canceled") msg = "canceled by VS Code";
         out.appendLine(`error: ${msg}`);
-        vscode.window.showErrorMessage(`rd-format error: ${msg}`);
+        vscode.window.showErrorMessage(`wformat error: ${msg}`);
     }
 
     out.appendLine(`Formatting: ${doc.uri.fsPath} END (${(performance.now() - start).toFixed(1)} ms)`);
     return edits;
 }
 
-export function activate(context: vscode.ExtensionContext) {
-    const out = vscode.window.createOutputChannel("rd-format");
-    const exeName = process.platform === "win32" ? "rd-format.exe" : "rd-format";
-    const exePath = context.asAbsolutePath(path.join("dist", "rd-format", exeName));
+function resolveBinaryPath(context: vscode.ExtensionContext): string {
+    const exeName = process.platform === "win32" ? "wformat.exe" : "wformat";
 
-    out.show(true);
+    const candidates: string[] = [];
+    if (process.platform === 'win32' && process.arch === 'x64') candidates.push('wformat-win32-x64');
+    if (process.platform === 'darwin' && process.arch === 'x64') candidates.push('wformat-darwin-x64');
+    if (process.platform === 'darwin' && process.arch === 'arm64') candidates.push('wformat-darwin-arm64');
+    if (process.platform === 'linux' && process.arch === 'x64') candidates.push('wformat-linux-x64');
+    if (process.platform === 'linux' && process.arch === 'arm64') candidates.push('wformat-linux-arm64');
+
+    for (const folder of candidates) {
+        const full = context.asAbsolutePath(path.join('dist', folder, exeName));
+        if (fs.existsSync(full)) return full;
+    }
+
+    // Single-folder layout fallback
+    return context.asAbsolutePath(path.join('dist', 'wformat', exeName));
+}
+
+export function activate(context: vscode.ExtensionContext) {
+    const out = vscode.window.createOutputChannel("wformat");
+
+    const exePath = resolveBinaryPath(context);
 
     if (!fs.existsSync(exePath)) {
-        const msg = `Embedded rd-format executable not found at: ${exePath}`;
+        const msg = `wformat is currently unavailable for platform=${process.platform} arch=${process.arch}.`;
         out.appendLine(msg);
         vscode.window.showErrorMessage(msg);
         context.subscriptions.push(out);
@@ -170,6 +195,8 @@ export function activate(context: vscode.ExtensionContext) {
     } catch {
     }
 
+    out.appendLine(`Using binary: ${exePath}`);
+
     startDaemon(exePath, out);
 
     const selector: vscode.DocumentSelector = [
@@ -177,7 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
     ];
 
     const provider: vscode.DocumentFormattingEditProvider = {
-        provideDocumentFormattingEdits: (doc, _, token) =>
+        provideDocumentFormattingEdits: (doc: vscode.TextDocument, _opts: vscode.FormattingOptions, token: vscode.CancellationToken) =>
             format(out, doc, token)
     };
 

@@ -1,4 +1,3 @@
-// format_topic05_windows_seh.cpp
 // Standalone formatting test: emulates a tiny subset of Win32 SEH-related
 // constructs so it can compile on non-Windows platforms without <windows.h>.
 //
