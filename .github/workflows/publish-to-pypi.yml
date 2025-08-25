@@ -42,14 +42,6 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-action
 
-      - name: Clean dist (Windows)
-        if: matrix.os == 'windows-latest'
-        run: Remove-Item -Recurse -Force .\dist
-
-      - name: Clean dist (posix)
-        if: matrix.os != 'windows-latest'
-        run: rm -rf dist
-
       - name: Install build tooling
         if: ${{ github.event.inputs.version != '' }}
         run: python -m pip install --upgrade pip toml
