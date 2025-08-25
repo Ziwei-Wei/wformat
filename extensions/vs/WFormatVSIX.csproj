@@ -116,7 +116,7 @@
   </Target>
   -->
   <ItemGroup>
-    <Content Include="dist\wformat\**\*">
+    <Content Include="dist\**\*">
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
