@@ -1,4 +1,4 @@
-name: Build VS Code Extension (Artifacts Only)
+name: Build Visual Studio Extension
 
 on:
   workflow_dispatch:

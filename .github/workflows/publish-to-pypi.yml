@@ -1,4 +1,4 @@
-name: Build & Publish wformat to (Test)PyPI
+name: Build & Publish to (Test)PyPI
 
 on:
   release:
