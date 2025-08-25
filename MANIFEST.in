@@ -1,0 +1,3 @@
+include src/wformat/data/.clang-format
+recursive-include src/wformat/data *
+recursive-include src/wformat/bin *
