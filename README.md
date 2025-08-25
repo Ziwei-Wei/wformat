@@ -39,7 +39,7 @@ Install ```wformat``` from extension market
 
 In any C++ file, Press ```ctrl + alt + P``` to bring up the command menu
 
-Type ```Format Document With``` select ```wformat``` from the drop down
+Type ```Format Document With...``` select ```Config Default Formatter...``` pick ```wformat```
 
 Next time you call ```Format Document```, vscode will use wformat
 
