@@ -87,9 +87,9 @@ class WFormat:
             )
             
         text = out2.decode("utf-8", "replace")
-        text = normalize_single_param_func(text)
         text = normalize_function_indent(text)
         text = normalize_integer_literal_in_memory(text)
+        text = normalize_single_param_func_call(text)
         return text
 
     def format_inplace(self, file_path: Path) -> None:

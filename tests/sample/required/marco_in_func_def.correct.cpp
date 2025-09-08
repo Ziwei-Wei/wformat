@@ -6,7 +6,9 @@ class TestClass
     TestUNREF(int UNREF(i));
 
     void
-    Test(int i);
+    Test(
+        int i
+        );
 };
 
 void

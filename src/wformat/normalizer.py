@@ -36,12 +36,10 @@ def normalize_integer_literal_in_memory(data: str, upper_case: bool = True) -> s
     return INTEGER_LITERAL_PATTERN.sub(repl=replace, string=data)
 
 
-def normalize_single_param_func(src: str) -> str:
+def normalize_single_param_func_call(src: str) -> str:
     """
-    Collapse only the *inside* of simple single-parameter calls/defs.
-    - Keep original spacing between the identifier/keyword and '('.
-      e.g. 'if (x)' stays 'if (x)', 'A ( a )' becomes 'A (a)' (space before '(' preserved).
-    - Only collapse when there is exactly one top-level argument with no parentheses.
+    Collapse only the *inside* of simple single-parameter calls.
+    Only collapse when there is exactly one top-level argument with no parentheses.
     """
 
     out = []
@@ -91,13 +89,42 @@ def normalize_single_param_func(src: str) -> str:
         inside_orig = src[j + 1 : k - 1]
 
         # Recurse inside first
-        inside_proc = normalize_single_param_func(inside_orig)
+        inside_proc = normalize_single_param_func_call(inside_orig)
 
         # Simple = exactly one top-level arg and it contains no parentheses
         is_single_param = not comma_at_top
         is_simple_arg = "(" not in inside_proc and ")" not in inside_proc
 
-        if is_single_param and is_simple_arg:
+        # Determine whether this paren group belongs to a function declaration/definition.
+        # We look ahead after the closing ')' skipping whitespace and comments.
+        p = k
+        def _skip_ws_and_comments(idx: int) -> int:
+            while idx < n:
+                # skip whitespace
+                while idx < n and src[idx].isspace():
+                    idx += 1
+                # line comment
+                if src.startswith("//", idx):
+                    idx_end = src.find("\n", idx + 2)
+                    if idx_end == -1:
+                        return n
+                    idx = idx_end + 1
+                    continue
+                # block comment
+                if src.startswith("/*", idx):
+                    endc = src.find("*/", idx + 2)
+                    if endc == -1:
+                        return n
+                    idx = endc + 2
+                    continue
+                break
+            return idx
+
+        p = _skip_ws_and_comments(p)
+        next_ch = src[p] if p < n else ""
+        is_func_decl_or_def = next_ch == ";" or next_ch == "{"
+
+        if is_single_param and is_simple_arg and not is_func_decl_or_def:
             # Preserve everything up to and including '(' exactly as in the source,
             # only collapse whitespace *inside* the parens.
             prefix_including_paren = src[i : j + 1]  # name + original whitespace + '('
