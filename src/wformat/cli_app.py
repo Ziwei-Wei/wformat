@@ -21,9 +21,9 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
             "tutorials:\n\n"
-            "format all under the current folder: (-a/--all)\n"
-            "   wformat -a\n"
-            "   → Recursively formats all C/C++ files under the current folder.\n\n"
+            "format all under the current folder: (-a/--against)\n"
+            "   wformat -a origin/develop\n"
+            "   → Recursively all C/C++ files diff with branch origin/develop.\n\n"
             "format all under the given folder: (-d/--dir)\n"
             "   wformat -d path/to/folder\n"
             "   → Recursively formats all C/C++ files under path/to/folder.\n\n"
