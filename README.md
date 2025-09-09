@@ -61,9 +61,7 @@ Run ```wformat``` or ```wformat -h``` to access the docs
 
 ```default
 > wformat
-overview: Opinionated code formatter for C++ code
-
-usage: wformat [-h] [-a] [-d DIR] [-m] [-s] [-c COMMITS] [--check] [--serial] [--ls] [--stdin] [--serve] [paths ...]
+usage: wformat [-h] [-d DIR] [-a BRANCH] [-m] [-s] [-c COMMITS] [--all] [--check] [--serial] [--ls] [--stdin] [--serve] [-v] [paths ...]
 
 tutorials:
 
@@ -92,15 +90,17 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -a, --all             Run auto format on all files which is child of current path.
   -d, --dir DIR         Run on file under which directory.
+  -a, --against BRANCH  Run auto format on files changed compared to BRANCH (git diff BRANCH...HEAD).
   -m, --modified        Run auto format on modified but not staged files in git.
   -s, --staged          Run auto format on staged files in git.
   -c, --commits COMMITS
                         Run auto format on all files modified in the last N commits.
+  --all                 Run auto format on all files which is child of current path.
   --check               Only check the format correctness without changing files.
   --serial              Run in serial mode or not. By default, script will use multi threading.
   --ls                  List all the files that matched given criteria to process and quit without processing them.
   --stdin               Read code from stdin and write formatted code to stdout (no banners).
   --serve               Run a persistent stdio server (JSON Lines) for IDE integration.
+  -v, --version         Show wformat version and exit
 ```
