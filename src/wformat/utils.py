@@ -1,5 +1,5 @@
 import argparse
-from asyncio import subprocess
+import subprocess
 from importlib.metadata import files
 import os
 import re
@@ -97,6 +97,45 @@ def get_files_in_last_n_commits(n: int) -> List[Path]:
         return []
 
     return [Path("./" + line.strip()) for line in result.stdout.splitlines()]
+
+
+def get_files_changed_against_branch(branch: str, use_merge_base: bool = True) -> List[Path]:
+    """Return files changed in the current HEAD compared to another branch.
+
+    Parameters
+    ----------
+    branch: str
+        The other branch to diff against.
+    use_merge_base: bool
+        If True (default) use three-dot syntax (branch...HEAD) which diffs
+        against the merge base. If False, use two-dot (branch..HEAD).
+    """
+    try:
+        subprocess.run(["git", "--version"], check=True)
+    except subprocess.CalledProcessError:
+        print("[Warning] git not found!")
+        return []
+
+    # Verify branch exists
+    try:
+        subprocess.run(["git", "rev-parse", "--verify", branch], capture_output=True, check=True)
+    except subprocess.CalledProcessError:
+        print(f"[Error] Branch '{branch}' not found")
+        return []
+
+    diff_range = f"{branch}...HEAD" if use_merge_base else f"{branch}..HEAD"
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", diff_range],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        print(f"[Error] Failed to diff against branch '{branch}'")
+        return []
+
+    return [Path("./" + line.strip()) for line in result.stdout.splitlines() if line.strip()]
 
 
 def filter_path_by_path(
