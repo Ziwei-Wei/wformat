@@ -65,9 +65,9 @@ usage: wformat [-h] [-d DIR] [-a BRANCH] [-m] [-s] [-c COMMITS] [--all] [--check
 
 tutorials:
 
-format all under the current folder: (-a/--all)
-   wformat -a
-   → Recursively formats all C/C++ files under the current folder.
+format all under the current folder: (-a/--against)
+   wformat -a origin/develop
+   → Recursively all C/C++ files diff with branch origin/develop.
 
 format all under the given folder: (-d/--dir)
    wformat -d path/to/folder
@@ -102,5 +102,5 @@ options:
   --ls                  List all the files that matched given criteria to process and quit without processing them.
   --stdin               Read code from stdin and write formatted code to stdout (no banners).
   --serve               Run a persistent stdio server (JSON Lines) for IDE integration.
-  -v, --version         Show wformat version and exit
+  -v, --version         Show wformat version and exit.
 ```
