@@ -21,12 +21,12 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
             "tutorials:\n\n"
-            "format files with diffs against another branch: (-a/--against)\n"
-            "   wformat -a origin/develop\n"
-            "   → Recursively all C/C++ files diff with branch origin/develop.\n\n"
             "format all under a given folder: (-d/--dir)\n"
             "   wformat -d path/to/folder\n"
             "   → Recursively formats all C/C++ files under path/to/folder.\n\n"
+            "format files with diffs against another branch: (-a/--against)\n"
+            "   wformat -a origin/develop\n"
+            "   → Formats C/C++ files which diff with branch origin/develop.\n\n"
             "format modified: (-m/--modified)\n"
             "   wformat -m\n"
             "   → Formats the modified files(not including staged) in your Git repository.\n\n"
