@@ -43,15 +43,32 @@ add_custom_target(
 )
 
 add_custom_target(
+    python_project_setup
+    COMMENT "Setup Python Project properly for development and extension build"
+    VERBATIM
+)
+
+add_dependencies(python_project_setup install_python_deps clang_format uncrustify)
+
+add_custom_target(
     pyinstaller_bundle
     ALL
     COMMAND ${Python_EXECUTABLE} -m PyInstaller -y wformat.spec
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/dist/wformat
-    ${CMAKE_SOURCE_DIR}/extensions/vs/dist/wformat
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Building wformat executable with PyInstaller"
     VERBATIM
 )
 
-add_dependencies(pyinstaller_bundle install_python_deps clang_format uncrustify)
+add_custom_target(
+    pyinstaller_bundle_for_vs
+    ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/dist/wformat
+    ${CMAKE_SOURCE_DIR}/extensions/vs/dist/wformat
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Copying PyInstaller output to VS extension folder"
+    VERBATIM
+)
+
+add_dependencies(pyinstaller_bundle python_project_setup)
+add_dependencies(pyinstaller_bundle_for_vs pyinstaller_bundle)

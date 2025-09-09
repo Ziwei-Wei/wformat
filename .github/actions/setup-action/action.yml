@@ -23,4 +23,4 @@ runs:
 
     - name: CMake Build (ALL)
       shell: bash
-      run: cmake --build build --parallel --config Debug
+      run: cmake --build build --parallel --config Debug --target python_project_setup

@@ -2,16 +2,6 @@
 
 Opinionated code formatter for C++ code.
 
-[![Copilot Setup](https://github.com/Ziwei-Wei/wformat/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/Ziwei-Wei/wformat/actions/workflows/copilot-setup-steps.yml)
-
-[![Tests](https://github.com/Ziwei-Wei/wformat/actions/workflows/tests.yml/badge.svg)](https://github.com/Ziwei-Wei/wformat/actions/workflows/tests.yml)
-
-[![Build & Publish to (Test)PyPI](https://github.com/Ziwei-Wei/wformat/actions/workflows/publish-to-pypi.yml/badge.svg)](https://github.com/Ziwei-Wei/wformat/actions/workflows/publish-to-pypi.yml)
-
-[![Build Visual Studio Extension](https://github.com/Ziwei-Wei/wformat/actions/workflows/build-vs-extension.yml/badge.svg)](https://github.com/Ziwei-Wei/wformat/actions/workflows/build-vs-extension.yml)
-
-[![Build VSCode Extension](https://github.com/Ziwei-Wei/wformat/actions/workflows/build-vscode-extension.yml/badge.svg)](https://github.com/Ziwei-Wei/wformat/actions/workflows/build-vscode-extension.yml)
-
 ## Availability
 
 limit: only support Format Document in IDEs for now

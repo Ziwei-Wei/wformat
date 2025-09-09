@@ -37,3 +37,7 @@ jobs:
 
       - name: Setup Environment
         uses: ./.github/actions/setup-action
+
+      - name: CMake Build
+        shell: bash
+        run: cmake --build build --parallel --config Debug --target python_project_setup

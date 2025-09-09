@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 from typing import Optional, Sequence
 
+from importlib import metadata as _metadata
+
 from wformat.wformat import WFormat
 from wformat.daemon import WFormatDaemon
 from wformat.utils import *  # noqa: F401,F403
@@ -99,11 +101,26 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Run a persistent stdio server (JSON Lines) for IDE integration.",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="Show wformat version and exit.",
+    )
 
     args = parser.parse_args(argv)
 
     if len(sys.argv) == 1:
         parser.print_help()
+        return 0
+
+    if args.version:
+        try:
+            ver = _metadata.version("wformat")
+        except Exception:
+            # fallback import (should already work) but just in case reuse package attr
+            from wformat import __version__ as ver  # type: ignore
+        print(ver)
         return 0
 
     if args.stdin:
