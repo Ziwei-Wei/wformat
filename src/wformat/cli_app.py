@@ -21,10 +21,10 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
             "tutorials:\n\n"
-            "format all under the current folder: (-a/--against)\n"
+            "format files with diffs against another branch: (-a/--against)\n"
             "   wformat -a origin/develop\n"
             "   → Recursively all C/C++ files diff with branch origin/develop.\n\n"
-            "format all under the given folder: (-d/--dir)\n"
+            "format all under a given folder: (-d/--dir)\n"
             "   wformat -d path/to/folder\n"
             "   → Recursively formats all C/C++ files under path/to/folder.\n\n"
             "format modified: (-m/--modified)\n"
@@ -46,7 +46,6 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
         nargs="*",
         help="All file paths to be formatted",
     )
-    
     parser.add_argument(
         "-d",
         "--dir",
@@ -114,7 +113,6 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
         help="Show wformat version and exit.",
     )
 
-
     args = parser.parse_args(argv)
 
     if len(sys.argv) == 1:
@@ -158,7 +156,9 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
         print(f"-- Will do recursive search for related files from {args.dir}")
         file_paths = search_files(Path(args.dir))
     elif args.against:
-        print(f"-- Will search files changed compared to branch '{args.against}' (merge-base diff)")
+        print(
+            f"-- Will search files changed compared to branch '{args.against}' (merge-base diff)"
+        )
         file_paths = get_files_changed_against_branch(args.against)
     elif len(sys.argv) == 1 or args.modified:
         print(f"-- Will search modified and not yet staged files by git")
@@ -196,10 +196,18 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
         return 0
 
     if args.check:
-        wformat.format_inplace_many_mt(file_paths) if not args.serial else wformat.format_inplace_many(file_paths)
+        (
+            wformat.format_inplace_many_mt(file_paths)
+            if not args.serial
+            else wformat.format_inplace_many(file_paths)
+        )
         return 0
 
-    wformat.format_inplace_many_mt(file_paths) if not args.serial else wformat.format_inplace_many(file_paths)
+    (
+        wformat.format_inplace_many_mt(file_paths)
+        if not args.serial
+        else wformat.format_inplace_many(file_paths)
+    )
 
     if args.modified or args.staged or args.commits or args.against:
         restage_files(file_paths)
