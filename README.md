@@ -55,7 +55,7 @@ You can find ```wformat.General```(or search ```wformat```) in ```Tools > Option
 
 By change ```Override default formatter``` to ```True```, you can use Format Document(```ctrl + K```, ```ctrl + D```) with wformat instead.
 
-#### Use as console app from ```Python Package Index (PyPI)```
+#### Use as console app from Python Package Index (PyPI)
 
 Run ```pip install wformat```, then you can use ```wformat``` in your console.
 
