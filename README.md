@@ -33,74 +33,35 @@ limit: only support Format Document in IDEs for now
 
 ## Tutorials
 
-### Use Visual Studio Code Extension
+### Installation
 
-Install ```wformat``` from extension market
+#### Use Visual Studio Code Extension
 
-In any C++ file, Press ```ctrl + alt + P``` to bring up the command menu
+Install ```wformat``` from extension market.
 
-Type ```Format Document With...``` select ```Config Default Formatter...``` pick ```wformat```
+In any C++ file, Press ```ctrl + alt + P``` to bring up the command menu.
 
-Next time you call ```Format Document```, vscode will use wformat
+Type ```Format Document With...``` select ```Config Default Formatter...``` pick ```wformat```.
 
-### Use Visual Studio Extension
+Next time you call ```Format Document```, vscode will use ```wformat```.
 
-Install ```wformat``` from extension market
+#### Use Visual Studio Extension
 
-By default, you can only click ```Run WFormat``` in your Right Click Menu to format on the file
+Install ```wformat``` from extension market.
 
-You can find ```wformat.General```(or search ```wformat```) in ```Tools > Options``` menu
+By default, you can only click ```Run WFormat``` in your Right Click Menu to format on the file.
 
-By change ```Override default formatter``` to ```True```, you can use Format Document(```ctrl + K```, ```ctrl + D```) with wformat instead
+You can find ```wformat.General```(or search ```wformat```) in ```Tools > Options``` menu.
 
-### Use as console app from ```Python Package Index (PyPI)```
+By change ```Override default formatter``` to ```True```, you can use Format Document(```ctrl + K```, ```ctrl + D```) with wformat instead.
 
-Run ```pip install wformat```
+#### Use as console app from ```Python Package Index (PyPI)```
 
-Run ```wformat``` or ```wformat -h``` to access the docs
+Run ```pip install wformat```, then you can use ```wformat``` in your console.
 
-```default
-> wformat
-usage: wformat [-h] [-d DIR] [-a BRANCH] [-m] [-s] [-c COMMITS] [--all] [--check] [--serial] [--ls] [--stdin] [--serve] [-v] [paths ...]
+### Usage
 
-tutorials:
+Run ```wformat -v``` to check your current version.
 
-format all under the current folder: (-a/--against)
-   wformat -a origin/develop
-   → Recursively all C/C++ files diff with branch origin/develop.
-
-format all under the given folder: (-d/--dir)
-   wformat -d path/to/folder
-   → Recursively formats all C/C++ files under path/to/folder.
-
-format modified: (-m/--modified)
-   wformat -m
-   → Formats the modified files(not including staged) in your Git repository.
-
-format staged: (-s/--staged)
-   wformat -s
-   → Formats the staged files in your Git repository.
-
-format last N commits: (-c/--commits)
-   wformat -c N
-   → Formats files from last N commits in your Git repository.
-
-positional arguments:
-  paths                 All file paths to be formatted
-
-options:
-  -h, --help            show this help message and exit
-  -d, --dir DIR         Run on file under which directory.
-  -a, --against BRANCH  Run auto format on files changed compared to BRANCH (git diff BRANCH...HEAD).
-  -m, --modified        Run auto format on modified but not staged files in git.
-  -s, --staged          Run auto format on staged files in git.
-  -c, --commits COMMITS
-                        Run auto format on all files modified in the last N commits.
-  --all                 Run auto format on all files which is child of current path.
-  --check               Only check the format correctness without changing files.
-  --serial              Run in serial mode or not. By default, script will use multi threading.
-  --ls                  List all the files that matched given criteria to process and quit without processing them.
-  --stdin               Read code from stdin and write formatted code to stdout (no banners).
-  --serve               Run a persistent stdio server (JSON Lines) for IDE integration.
-  -v, --version         Show wformat version and exit.
-```
+Run ```wformat``` or ```wformat -h``` to get the usage help doc.
+Find developer friendly use examples under the ```tutorials:``` section.
