@@ -6,7 +6,8 @@
         "uncrustify",
         "wformat"
     ],
-    "python.analysis.extraPaths": ["./src"],
-    "python.analysis.indexing": true,
-    "sarif-viewer.connectToGithubCodeScanning": "off"
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "python.analysis.indexing": true
 }
