@@ -8,7 +8,15 @@ from importlib import metadata as _metadata
 
 from wformat.wformat import WFormat
 from wformat.daemon import WFormatDaemon
-from wformat.utils import *  # noqa: F401,F403
+from wformat.utils import (
+    valid_path_in_args,
+    search_files,
+    get_files_changed_against_branch,
+    get_modified_files,
+    get_staged_files,
+    get_files_in_last_n_commits,
+    restage_files,
+)
 
 
 def cli_app(argv: Sequence[str] | None = None) -> int:

@@ -56,12 +56,12 @@ class Uncrustify:
             encoding="utf-8",
         )
         return res.stdout
-    
+
     def args_for_stdin(self) -> list[str]:
         return [
             self.exe_path,
             "-q",
-            "-l", 
+            "-l",
             "CPP",
             "-c",
             self.config_path,

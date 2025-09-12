@@ -8,7 +8,10 @@ import threading
 from typing import Sequence
 
 from wformat.clang_format import ClangFormat
-from wformat.normalizer import *
+from wformat.normalizer import (
+    fix_with_tree_sitter,
+    normalize_integer_literal_in_memory,
+)
 from wformat.uncrustify import Uncrustify
 
 
