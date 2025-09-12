@@ -14,6 +14,10 @@ description = "Opinionated code formatter for C++ code."
 classifiers = [
     "Programming Language :: Python :: 3"
 ]
+dependencies = [
+    "tree-sitter",
+    "tree-sitter-cpp",
+]
 
 [project.scripts]
 wformat = "wformat.cli_app:cli_app"

@@ -21,38 +21,6 @@ class WFormat:
         self.clang_format = ClangFormat()
         self.uncrustify = Uncrustify()
 
-    def run_stdin_pipeline(self) -> int:
-        p1 = subprocess.Popen(
-            self.clang_format.args_for_stdin(),
-            stdin=sys.stdin.buffer,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=65536,
-            text=False,
-        )
-        p2 = subprocess.Popen(
-            self.uncrustify.args_for_stdin(),
-            stdin=p1.stdout,
-            stdout=sys.stdout.buffer,
-            stderr=subprocess.PIPE,
-            bufsize=65536,
-            text=False,
-        )
-        p1.stdout.close()
-        _, err2 = p2.communicate()
-        err1 = p1.stderr.read()
-        rc1 = p1.wait()
-        rc2 = p2.returncode
-        if rc1 != 0:
-            raise RuntimeError(
-                err1.decode("utf-8", "replace") or f"clang-format failed ({rc1})"
-            )
-        if rc2 != 0:
-            raise RuntimeError(
-                err2.decode("utf-8", "replace") or f"uncrustify failed ({rc2})"
-            )
-        return 0
-
     def format_memory(self, data: str) -> str:
         p1 = subprocess.Popen(
             self.clang_format.args_for_stdin(),
@@ -71,6 +39,7 @@ class WFormat:
             text=False,
         )
         p1.stdout.close()
+        assert p1.stdin is not None
         p1.stdin.write(data.encode("utf-8"))
         p1.stdin.close()
         err1 = p1.stderr.read() if p1.stderr else b""
@@ -85,17 +54,22 @@ class WFormat:
             raise RuntimeError(
                 err2.decode("utf-8", "replace") or f"uncrustify failed ({rc2})"
             )
-            
         text = out2.decode("utf-8", "replace")
-        text = normalize_function_indent(text)
+        text = fix_with_tree_sitter(text)
         text = normalize_integer_literal_in_memory(text)
-        text = normalize_single_param_func_call(text)
         return text
 
+    def run_stdin_pipeline(self) -> int:
+        data = sys.stdin.read()
+        text = self.format_memory(data)
+        sys.stdout.write(text)
+        sys.stdout.flush()
+        return 0
+
     def format_inplace(self, file_path: Path) -> None:
-        self.clang_format.format(file_path)
-        normalize_integer_literal(file_path)
-        self.uncrustify.format(file_path)
+        original_text = file_path.read_text(encoding="utf-8")
+        formatted_text = self.format_memory(original_text)
+        file_path.write_text(formatted_text, encoding="utf-8")
         self.uncrustify.clear_temp_files(file_path)
 
     def format_inplace_many(self, file_paths: List[Path]) -> None:

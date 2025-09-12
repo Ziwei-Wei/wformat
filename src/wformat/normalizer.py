@@ -1,16 +1,30 @@
 import re
 from pathlib import Path
 import traceback
+from typing import Any, Callable, List, Pattern, Tuple, Match
+from tree_sitter import Language, Parser, Query, QueryCursor
+import tree_sitter_cpp as ts_cpp
 
-INTEGER_LITERAL_PATTERN = re.compile(
+# try https://tree-sitter.github.io/tree-sitter/7-playground.html
+
+_CPP_LANGUAGE: Language = Language(ts_cpp.language())
+_PARSER: Parser = Parser(_CPP_LANGUAGE)
+_QUERY: Query = Query(
+    _CPP_LANGUAGE,
+    """
+    (call_expression) @call
+    (function_definition) @func
+    (declaration) @func
+    (field_declaration) @func
+    """.strip(),
+)
+
+_INTEGER_LITERAL_PATTERN: Pattern[str] = re.compile(
     r"\b((0[bB]([01][01']*[01]|[01]+))|(0[xX]([\da-fA-F][\da-fA-F']*[\da-fA-F]|[\da-fA-F]+))|(0([0-7][0-7']*[0-7]|[0-7]+))|([1-9](\d[\d']*\d|\d*)))([uU]?[lL]{0,2}|[lL]{0,2}[uU]?)?\b"
 )
-IDENTIFIER_PATTERN = re.compile(r"[A-Za-z_]\w*")
-RETURN_TYPE_PATTERN = re.compile(
-    r"^\s*(inline|static|constexpr|virtual|friend|typedef|using|void|[A-Za-z_][A-Za-z0-9_]*)"
-)
-DISALLOWED_CHARS_PATTERN = re.compile(r".*[\;\(\)\{\}\\].*")
-LEADING_SPACES_PATTERN = re.compile(r"^\s*")
+
+# (start_byte, end_byte, replacement_bytes)
+Edit = Tuple[int, int, bytes]
 
 
 def normalize_integer_literal(file_path: Path, upper_case: bool = True) -> None:
@@ -24,7 +38,7 @@ def normalize_integer_literal(file_path: Path, upper_case: bool = True) -> None:
 
 
 def normalize_integer_literal_in_memory(data: str, upper_case: bool = True) -> str:
-    def replace(match: re.Match[str]):
+    def replace(match: Match[str]) -> str:
         update = match.group(0)
         update = update.upper() if upper_case else update.lower()
         if len(update) > 1 and update[0] == "0":
@@ -33,145 +47,105 @@ def normalize_integer_literal_in_memory(data: str, upper_case: bool = True) -> s
             update = " " + update
         return update
 
-    return INTEGER_LITERAL_PATTERN.sub(repl=replace, string=data)
+    return _INTEGER_LITERAL_PATTERN.sub(repl=replace, string=data)
 
 
-def normalize_single_param_func_call(src: str) -> str:
-    """
-    Collapse only the *inside* of simple single-parameter calls.
-    Only collapse when there is exactly one top-level argument with no parentheses.
-    """
+def fix_with_tree_sitter(code: str) -> str:
+    if not code:
+        return code
 
-    out = []
-    i, n = 0, len(src)
+    src: bytes = code.encode("utf-8")
+    tree = _PARSER.parse(src)
 
-    while i < n:
-        m = IDENTIFIER_PATTERN.match(src, i)
-        if not m:
-            out.append(src[i])
-            i += 1
+    edits: List[Edit] = []
+    edits += fix_single_arg_func_calls(src, tree)
+    edits += fix_func_indent(src, tree)
+
+    edits.sort(key=lambda e: e[0], reverse=True)
+    for start, end, rep in edits:
+        src = src[:start] + rep + src[end:]
+    return src.decode("utf-8")
+
+
+def fix_func_indent(src: bytes, tree: Any) -> List[Edit]:
+    cursor: QueryCursor = QueryCursor(_QUERY)
+    captures: Any = cursor.captures(
+        tree.root_node
+    )  # library-specific dynamic structure
+
+    call_nodes: List[Any] = captures.get("func", [])  # type: ignore[index]
+    iterable: List[Tuple[Any, str]] = [(n, "func") for n in call_nodes]
+
+    edits: List[Edit] = []
+    for node, cap_name in iterable:
+
+        if cap_name != "func":
             continue
 
-        # name [whitespace] '(' ...
-        name_start = i
-        j = m.end()
-        while j < n and src[j].isspace():
-            j += 1
-        if j >= n or src[j] != "(":
-            # Not a call/def; copy through what we consumed
-            out.append(src[i:j])
-            i = j
+        return_type: Any = node.child_by_field_name("type")
+        declarator: Any = node.child_by_field_name("declarator")
+
+        if return_type is None or declarator is None:
             continue
 
-        # Find matching ')', track commas at top level
-        depth, k = 0, j
-        comma_at_top = False
-        while k < n:
-            ch = src[k]
-            if ch == "(":
-                depth += 1
-            elif ch == ")":
-                depth -= 1
-                if depth == 0:
-                    k += 1  # include ')'
-                    break
-            elif ch == "," and depth == 1:
-                comma_at_top = True
-            k += 1
+        return_type_row: int = return_type.start_point[0]
+        return_type_col: int = return_type.start_point[1]
+        declarator_row: int = declarator.start_point[0]
+        declarator_col: int = declarator.start_point[1]
 
-        if depth != 0:
-            # Unbalanced: fail safe
-            out.append(src[i])
-            i += 1
+        dist: int = declarator_col - return_type_col
+
+        if return_type_row < declarator_row and dist > 0:
+            edits.append(
+                (
+                    declarator.start_byte - dist,
+                    declarator.end_byte,
+                    src[declarator.start_byte : declarator.end_byte],
+                )
+            )
+    return edits
+
+
+def fix_single_arg_func_calls(src: bytes, tree: Any) -> List[Edit]:
+    cursor: QueryCursor = QueryCursor(_QUERY)
+    captures: Any = cursor.captures(tree.root_node)
+
+    call_nodes: List[Any] = captures.get("call", [])  # type: ignore[index]
+    iterable: List[Tuple[Any, str]] = [(n, "call") for n in call_nodes]
+
+    edits: List[Edit] = []
+    for node, cap_name in iterable:
+        if cap_name != "call":
+            continue
+        func: Any = node.child_by_field_name("function")
+        args: Any = node.child_by_field_name("arguments")
+        if func is None or args is None:
             continue
 
-        # Inside content (between the outer parens)
-        inside_orig = src[j + 1 : k - 1]
-
-        # Recurse inside first
-        inside_proc = normalize_single_param_func_call(inside_orig)
-
-        # Simple = exactly one top-level arg and it contains no parentheses
-        is_single_param = not comma_at_top
-        is_simple_arg = "(" not in inside_proc and ")" not in inside_proc
-
-        # Determine whether this paren group belongs to a function declaration/definition.
-        # We look ahead after the closing ')' skipping whitespace and comments.
-        p = k
-        def _skip_ws_and_comments(idx: int) -> int:
-            while idx < n:
-                # skip whitespace
-                while idx < n and src[idx].isspace():
-                    idx += 1
-                # line comment
-                if src.startswith("//", idx):
-                    idx_end = src.find("\n", idx + 2)
-                    if idx_end == -1:
-                        return n
-                    idx = idx_end + 1
-                    continue
-                # block comment
-                if src.startswith("/*", idx):
-                    endc = src.find("*/", idx + 2)
-                    if endc == -1:
-                        return n
-                    idx = endc + 2
-                    continue
+        flat_args: List[Any] = []
+        has_comment: bool = False
+        for c in args.named_children:
+            if c.type == "comment":
+                has_comment = True
                 break
-            return idx
+            if c.type == "argument" and c.named_children:
+                flat_args.append(c.named_children[0])
+            else:
+                flat_args.append(c)
+        if has_comment or len(flat_args) != 1:
+            continue
 
-        p = _skip_ws_and_comments(p)
-        next_ch = src[p] if p < n else ""
-        is_func_decl_or_def = next_ch == ";" or next_ch == "{"
+        if flat_args[0].type == "call_expression":
+            continue
 
-        if is_single_param and is_simple_arg and not is_func_decl_or_def:
-            # Preserve everything up to and including '(' exactly as in the source,
-            # only collapse whitespace *inside* the parens.
-            prefix_including_paren = src[i : j + 1]  # name + original whitespace + '('
-            arg = re.sub(r"\s+", " ", inside_proc).strip()
-            out.append(prefix_including_paren)
-            out.append(arg)
-            out.append(")")
-        else:
-            # Keep outer layout; use processed interior
-            out.append(src[i : j + 1])  # original up to '('
-            out.append(inside_proc)
-            out.append(")")
+        args_text: str = src[args.start_byte : args.end_byte].decode("utf-8")
+        if not (args_text.startswith("(") and args_text.endswith(")")):
+            continue
 
-        i = k  # continue after ')'
+        new_args_text: str = f"({args_text[1:-1].strip()})"
+        if new_args_text != args_text:
+            edits.append(
+                (args.start_byte, args.end_byte, new_args_text.encode("utf-8"))
+            )
 
-    return "".join(out)
-
-
-def normalize_function_indent(src: str) -> str:
-    """
-    Normalize indentation of function definitions/declarations:
-    - Keep return type / specifiers at their line's indent.
-    - Place the function name at the *same indent*, not indented further.
-    """
-    lines = src.splitlines()
-    out_lines = []
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-
-        # Detect a "return type/specifier" line (heuristic: ends without '(' and no ';')
-        if RETURN_TYPE_PATTERN.match(line) and not DISALLOWED_CHARS_PATTERN.match(line):
-            # Look ahead: next line that contains a '(' → likely the function name
-            if i + 1 < len(lines):
-                next_line = lines[i + 1]
-                if "(" in next_line:
-                    # indent level of the first line
-                    base_indent = LEADING_SPACES_PATTERN.match(line).group(0)
-                    # strip leading spaces from next_line
-                    stripped_next = next_line.lstrip()
-                    out_lines.append(line)
-                    out_lines.append(base_indent + stripped_next)
-                    i += 2
-                    continue
-
-        # Default: just copy
-        out_lines.append(line)
-        i += 1
-
-    return "\n".join(out_lines)
+    return edits
