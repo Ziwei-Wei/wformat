@@ -18,6 +18,28 @@ NextId()
     return ++id;
 }
 
+[[nodiscard]]
+int
+NextId2();
+
+class [[nodiscard]] Counter
+{
+    [[nodiscard]]
+    int
+    NextId()
+    {
+        static int id = 0;
+
+        return ++id;
+    }
+
+    [[nodiscard]]
+    int
+    NextId2();
+
+    int value = 0;
+};
+
 int
 main()
 {

@@ -24,7 +24,9 @@ struct Kind<T, std::enable_if_t<std::is_integral_v<T>>>
 
 template <class T>
 auto
-Describe(T v) -> std::enable_if_t<std::is_integral_v<T>, std::string>
+Describe(
+    T v
+    ) -> std::enable_if_t<std::is_integral_v<T>, std::string>
 {
     return std::string(Kind<T>::name()) + ":" + std::to_string((long long) v);
 }

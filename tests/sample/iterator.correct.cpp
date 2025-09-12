@@ -5,7 +5,9 @@ class IntIterator
 {
 public:
 
-    explicit IntIterator(std::vector<int> v):
+    explicit IntIterator(
+        std::vector<int> v
+        ):
         _v(std::move(v)),
         _it(_v.begin())
     {

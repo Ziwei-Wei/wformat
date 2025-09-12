@@ -4,16 +4,16 @@ from wformat.wformat import WFormat
 import difflib
 
 
-def test_required_samples():
+def test_samples():
     """
-    Workflow per original *.cpp (single dot) in tests/sample/required:
+    Workflow per original *.cpp (single dot) in tests/sample:
       0. Remove any stale *.formatted.cpp files.
       1. Format source -> <base>.formatted.cpp
       2. Compare with <base>.correct.cpp (must exist)
       3. Collect unified diffs for mismatches
       4. Check idempotency
     """
-    base_dir = Path(__file__).resolve().parents[1] / "sample" / "required"
+    base_dir = Path(__file__).resolve().parents[1] / "sample"
     if not base_dir.exists():
         pytest.skip(f"Missing directory: {base_dir}")
 
@@ -70,7 +70,20 @@ def test_required_samples():
         # Idempotency check
         again = formatter.format_memory(formatted)
         if again != formatted:
-            diffs.append(f"[NON-IDEMPOTENT] {src.name}")
+            # Provide a diff between first and second formatting passes for debugging
+            idempotent_diff_lines = difflib.unified_diff(
+                formatted.splitlines(keepends=True),
+                again.splitlines(keepends=True),
+                fromfile=f"{src.name} (first pass)",
+                tofile=f"{src.name} (second pass)",
+                lineterm="",
+            )
+            idempotent_diff_list = list(idempotent_diff_lines)
+            if len(idempotent_diff_list) > 500:
+                idempotent_diff_list = idempotent_diff_list[:500] + ["\n... (idempotency diff truncated)"]
+            diffs.append(
+                f"[NON-IDEMPOTENT] {src.name}\n" + "".join(idempotent_diff_list)
+            )
 
     if diffs:
         for d in diffs:
