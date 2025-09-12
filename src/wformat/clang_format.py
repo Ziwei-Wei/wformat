@@ -8,9 +8,9 @@ from wformat.utils import wheel_bin_path, wheel_data_path
 class ClangFormat:
     """Thin wrapper around clang-format with packaged executable and config"""
 
-    def __init__(self):
-        self.exe_path = wheel_bin_path("clang-format")
-        self.config_path = wheel_data_path(".clang-format")
+    def __init__(self) -> None:
+        self.exe_path: Path = wheel_bin_path("clang-format")
+        self.config_path: Path = wheel_data_path(".clang-format")
 
     def print_info(self) -> None:
         """Print information about the clang-format executable and config."""

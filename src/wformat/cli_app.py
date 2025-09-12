@@ -2,7 +2,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Sequence
 
 from importlib import metadata as _metadata
 
@@ -11,7 +11,7 @@ from wformat.daemon import WFormatDaemon
 from wformat.utils import *  # noqa: F401,F403
 
 
-def cli_app(argv: Optional[Sequence[str]] = None) -> int:
+def cli_app(argv: Sequence[str] | None = None) -> int:
 
     if sys.version_info < (3, 0):
         sys.exit("This script requires Python 3 or higher.")
@@ -137,7 +137,7 @@ def cli_app(argv: Optional[Sequence[str]] = None) -> int:
     if args.serve:
         sys.exit(WFormatDaemon(wformat).serve())
 
-    file_paths = []
+    file_paths: list[Path] = []
 
     if not sys.stdin.isatty():
         for line in sys.stdin:

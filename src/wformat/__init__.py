@@ -3,8 +3,6 @@
 Exposes the package version as __version__.
 """
 
-from __future__ import annotations
-
 from importlib import metadata as _metadata
 
 try:  # Prefer distribution metadata when installed

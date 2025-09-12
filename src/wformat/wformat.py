@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import sys
 import threading
-from typing import List
+from typing import Sequence
 
 from wformat.clang_format import ClangFormat
 from wformat.normalizer import *
@@ -17,9 +17,9 @@ def _get_formatted_path(file_path: Path) -> Path:
 
 
 class WFormat:
-    def __init__(self):
-        self.clang_format = ClangFormat()
-        self.uncrustify = Uncrustify()
+    def __init__(self) -> None:
+        self.clang_format: ClangFormat = ClangFormat()
+        self.uncrustify: Uncrustify = Uncrustify()
 
     def format_memory(self, data: str) -> str:
         p1 = subprocess.Popen(
@@ -72,7 +72,7 @@ class WFormat:
         file_path.write_text(formatted_text, encoding="utf-8")
         self.uncrustify.clear_temp_files(file_path)
 
-    def format_inplace_many(self, file_paths: List[Path]) -> None:
+    def format_inplace_many(self, file_paths: Sequence[Path]) -> None:
         for p in file_paths:
             self.format_inplace(p)
 
@@ -82,10 +82,10 @@ class WFormat:
         self.format_inplace(formatted_file_path)
         return formatted_file_path
 
-    def format_many(self, file_paths: List[Path]) -> List[Path]:
+    def format_many(self, file_paths: Sequence[Path]) -> list[Path]:
         return [self.format(p) for p in file_paths]
 
-    def format_inplace_many_mt(self, file_paths: List[Path]) -> None:
+    def format_inplace_many_mt(self, file_paths: Sequence[Path]) -> None:
         total_count = len(file_paths)
         if total_count == 0:
             print("-- No files to process")
@@ -98,7 +98,7 @@ class WFormat:
         progress_counter = 0
         progress_counter_lock = threading.Lock()
 
-        def worker(p: Path):
+        def worker(p: Path) -> None:
             nonlocal progress_counter
             self.format_inplace(p)
             with progress_counter_lock:

@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 import traceback
-from typing import Any, Callable, List, Pattern, Tuple, Match
+from typing import Any, Pattern, Match
 from tree_sitter import Language, Parser, Query, QueryCursor
 import tree_sitter_cpp as ts_cpp
 
@@ -24,7 +24,7 @@ _INTEGER_LITERAL_PATTERN: Pattern[str] = re.compile(
 )
 
 # (start_byte, end_byte, replacement_bytes)
-Edit = Tuple[int, int, bytes]
+Edit = tuple[int, int, bytes]
 
 
 def normalize_integer_literal(file_path: Path, upper_case: bool = True) -> None:
@@ -57,7 +57,7 @@ def fix_with_tree_sitter(code: str) -> str:
     src: bytes = code.encode("utf-8")
     tree = _PARSER.parse(src)
 
-    edits: List[Edit] = []
+    edits: list[Edit] = []
     edits += fix_single_arg_func_calls(src, tree)
     edits += fix_func_indent(src, tree)
 
@@ -67,16 +67,16 @@ def fix_with_tree_sitter(code: str) -> str:
     return src.decode("utf-8")
 
 
-def fix_func_indent(src: bytes, tree: Any) -> List[Edit]:
+def fix_func_indent(src: bytes, tree: Any) -> list[Edit]:
     cursor: QueryCursor = QueryCursor(_QUERY)
     captures: Any = cursor.captures(
         tree.root_node
     )  # library-specific dynamic structure
 
-    call_nodes: List[Any] = captures.get("func", [])  # type: ignore[index]
-    iterable: List[Tuple[Any, str]] = [(n, "func") for n in call_nodes]
+    call_nodes: list[Any] = captures.get("func", [])  # type: ignore[index]
+    iterable: list[tuple[Any, str]] = [(n, "func") for n in call_nodes]
 
-    edits: List[Edit] = []
+    edits: list[Edit] = []
     for node, cap_name in iterable:
 
         if cap_name != "func":
@@ -106,14 +106,14 @@ def fix_func_indent(src: bytes, tree: Any) -> List[Edit]:
     return edits
 
 
-def fix_single_arg_func_calls(src: bytes, tree: Any) -> List[Edit]:
+def fix_single_arg_func_calls(src: bytes, tree: Any) -> list[Edit]:
     cursor: QueryCursor = QueryCursor(_QUERY)
     captures: Any = cursor.captures(tree.root_node)
 
-    call_nodes: List[Any] = captures.get("call", [])  # type: ignore[index]
-    iterable: List[Tuple[Any, str]] = [(n, "call") for n in call_nodes]
+    call_nodes: list[Any] = captures.get("call", [])  # type: ignore[index]
+    iterable: list[tuple[Any, str]] = [(n, "call") for n in call_nodes]
 
-    edits: List[Edit] = []
+    edits: list[Edit] = []
     for node, cap_name in iterable:
         if cap_name != "call":
             continue
@@ -121,8 +121,7 @@ def fix_single_arg_func_calls(src: bytes, tree: Any) -> List[Edit]:
         args: Any = node.child_by_field_name("arguments")
         if func is None or args is None:
             continue
-
-        flat_args: List[Any] = []
+        flat_args: list[Any] = []
         has_comment: bool = False
         for c in args.named_children:
             if c.type == "comment":

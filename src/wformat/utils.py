@@ -1,12 +1,10 @@
 import argparse
 import subprocess
-from importlib.metadata import files
 import os
-import re
 import sys
 from pathlib import Path
 import traceback
-from typing import List
+from typing import Iterable, Sequence
 import importlib.resources as ir
 
 
@@ -39,13 +37,11 @@ def restage_file(path: Path) -> None:
     except subprocess.CalledProcessError as e:
         print(f"[Error] Failed to restage {path}: {e}")
 
-
-def restage_files(paths: List[Path]) -> None:
+def restage_files(paths: Sequence[Path]) -> None:
     for path in paths:
         restage_file(path)
 
-
-def get_modified_files() -> List[Path]:
+def get_modified_files() -> list[Path]:
     try:
         subprocess.run(["git", "--version"])
     except subprocess.CalledProcessError:
@@ -61,7 +57,7 @@ def get_modified_files() -> List[Path]:
     return modified_files
 
 
-def get_staged_files() -> List[Path]:
+def get_staged_files() -> list[Path]:
     try:
         subprocess.run(["git", "--version"], check=True)
     except subprocess.CalledProcessError:
@@ -78,7 +74,7 @@ def get_staged_files() -> List[Path]:
     return staged_files
 
 
-def get_files_in_last_n_commits(n: int) -> List[Path]:
+def get_files_in_last_n_commits(n: int) -> list[Path]:
     try:
         subprocess.run(["git", "--version"], check=True)
     except subprocess.CalledProcessError:
@@ -99,7 +95,7 @@ def get_files_in_last_n_commits(n: int) -> List[Path]:
     return [Path("./" + line.strip()) for line in result.stdout.splitlines()]
 
 
-def get_files_changed_against_branch(branch: str, use_merge_base: bool = True) -> List[Path]:
+def get_files_changed_against_branch(branch: str, use_merge_base: bool = True) -> list[Path]:
     """Return files changed in the current HEAD compared to another branch.
 
     Parameters
@@ -139,27 +135,36 @@ def get_files_changed_against_branch(branch: str, use_merge_base: bool = True) -
 
 
 def filter_path_by_path(
-    file_paths: List[Path], include_paths: List[Path], exclude_paths: List[Path]
-) -> List[Path]:
-    filtered_paths = []
+    file_paths: Iterable[Path], *, include_paths: Sequence[Path], exclude_paths: Sequence[Path]
+) -> list[Path]:
+    """Filter file paths that are under any include_paths but not under any exclude_paths.
+
+    Parameters
+    ----------
+    file_paths: Iterable[Path]
+        Candidate file paths.
+    include_paths: Sequence[Path]
+        A file will be kept if it is located under (is_relative_to) at least one include path.
+    exclude_paths: Sequence[Path]
+        A file will be discarded if it is located under any exclude path.
+    """
+    filtered_paths: list[Path] = []
     for file_path in file_paths:
-        if any(
-            file_path.resolve().is_relative_to(include_path.resolve())
-            for include_path in include_paths
-        ) and all(
-            not file_path.resolve().is_relative_to(exclude_path.resolve())
-            for exclude_path in exclude_paths
+        fp_resolved = file_path.resolve()
+        if any(fp_resolved.is_relative_to(ip.resolve()) for ip in include_paths) and not any(
+            fp_resolved.is_relative_to(ep.resolve()) for ep in exclude_paths
         ):
-            filtered_paths += [file_path]
+            filtered_paths.append(file_path)
     return filtered_paths
 
 
 def search_files(dir: Path) -> list[Path]:
-    return [path for path in list(dir.rglob("*")) if path.is_file() and path.exists()]
+    """Recursively gather all files under a directory."""
+    return [p for p in dir.rglob("*") if p.is_file() and p.exists()]
 
-
-def find_file(name: str, dir: Path = Path(".")) -> Path:
-    for file in dir.rglob(name):
-        if file.is_file() and file.exists():
-            return file
+def find_file(name: str, dir: Path = Path(".")) -> Path | None:
+    """Return the first file named 'name' under dir (recursive) or None."""
+    for f in dir.rglob(name):
+        if f.is_file() and f.exists():
+            return f
     return None

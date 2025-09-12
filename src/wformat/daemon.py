@@ -1,9 +1,8 @@
-from __future__ import annotations
 import base64
 import json
 import sys
 import traceback
-from typing import Any, Dict
+from typing import Any
 
 from wformat.wformat import WFormat
 
@@ -28,14 +27,14 @@ class WFormatDaemon:
     _MAX_REQUEST_BYTES = 16 * 1024 * 1024
 
     def __init__(self, formatter: WFormat) -> None:
-        self.wformat = formatter
+        self.wformat: WFormat = formatter
 
-    def _reply(self, obj: Dict[str, Any]) -> None:
+    def _reply(self, obj: dict[str, Any]) -> None:
         sys.stdout.write(json.dumps(obj, ensure_ascii=False) + "\n")
         sys.stdout.flush()
 
     def _reply_err(self, msg: str, rid: int | None = None) -> None:
-        payload: Dict[str, Any] = {"ok": False, "error": msg}
+        payload: dict[str, Any] = {"ok": False, "error": msg}
         if rid is not None:
             payload["id"] = rid
         self._reply(payload)
