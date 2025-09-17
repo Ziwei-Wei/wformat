@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 import traceback
 from typing import Any, Pattern, Match
-from tree_sitter import Language, Parser, Query, QueryCursor
+from tree_sitter import Language, Parser, Query, QueryCursor, Node
 import tree_sitter_cpp as ts_cpp
 
 # try https://tree-sitter.github.io/tree-sitter/7-playground.html
@@ -69,82 +69,63 @@ def fix_with_tree_sitter(code: str) -> str:
 
 def fix_func_indent(src: bytes, tree: Any) -> list[Edit]:
     cursor: QueryCursor = QueryCursor(_QUERY)
-    captures: Any = cursor.captures(
-        tree.root_node
-    )  # library-specific dynamic structure
-
-    call_nodes: list[Any] = captures.get("func", [])  # type: ignore[index]
-    iterable: list[tuple[Any, str]] = [(n, "func") for n in call_nodes]
-
+    captures: dict[str, list[Node]] = cursor.captures(tree.root_node)
+    func_nodes: list[Node] = captures.get("func", [])
     edits: list[Edit] = []
-    for node, cap_name in iterable:
+    for node in func_nodes:
+        type: Node | None = node.child_by_field_name("type")
+        declarator: Node | None = node.child_by_field_name("declarator")
 
-        if cap_name != "func":
-            continue
+        if type and declarator and declarator.grammar_name == "function_declarator":
+            return_type_row: int = type.start_point[0]
+            return_type_col: int = type.start_point[1]
+            declarator_row: int = declarator.start_point[0]
+            declarator_col: int = declarator.start_point[1]
 
-        return_type: Any = node.child_by_field_name("type")
-        declarator: Any = node.child_by_field_name("declarator")
+            dist: int = declarator_col - return_type_col
 
-        if return_type is None or declarator is None:
-            continue
-
-        return_type_row: int = return_type.start_point[0]
-        return_type_col: int = return_type.start_point[1]
-        declarator_row: int = declarator.start_point[0]
-        declarator_col: int = declarator.start_point[1]
-
-        dist: int = declarator_col - return_type_col
-
-        if return_type_row < declarator_row and dist > 0:
-            edits.append(
-                (
-                    declarator.start_byte - dist,
-                    declarator.end_byte,
-                    src[declarator.start_byte : declarator.end_byte],
+            if return_type_row < declarator_row and dist > 0:
+                edits.append(
+                    (
+                        declarator.start_byte - dist,
+                        declarator.end_byte,
+                        src[declarator.start_byte : declarator.end_byte],
+                    )
                 )
-            )
     return edits
 
 
 def fix_single_arg_func_calls(src: bytes, tree: Any) -> list[Edit]:
     cursor: QueryCursor = QueryCursor(_QUERY)
-    captures: Any = cursor.captures(tree.root_node)
-
-    call_nodes: list[Any] = captures.get("call", [])  # type: ignore[index]
-    iterable: list[tuple[Any, str]] = [(n, "call") for n in call_nodes]
-
+    captures: dict[str, list[Node]] = cursor.captures(tree.root_node)
+    call_nodes: list[Node] = captures.get("call", [])
     edits: list[Edit] = []
-    for node, cap_name in iterable:
-        if cap_name != "call":
-            continue
-        func: Any = node.child_by_field_name("function")
-        args: Any = node.child_by_field_name("arguments")
-        if func is None or args is None:
-            continue
-        flat_args: list[Any] = []
-        has_comment: bool = False
-        for c in args.named_children:
-            if c.type == "comment":
-                has_comment = True
-                break
-            if c.type == "argument" and c.named_children:
-                flat_args.append(c.named_children[0])
-            else:
-                flat_args.append(c)
-        if has_comment or len(flat_args) != 1:
-            continue
+    for node in call_nodes:
+        function: Node | None = node.child_by_field_name("function")
+        arguments: Node | None = node.child_by_field_name("arguments")
+        if function and arguments and len(arguments.named_children) == 1:
 
-        if flat_args[0].type == "call_expression":
-            continue
+            first_grammar_name = arguments.named_children[0].grammar_name
+            if (
+                first_grammar_name == "lambda_expression"
+                or first_grammar_name == "call_expression"
+            ):
+                continue
 
-        args_text: str = src[args.start_byte : args.end_byte].decode("utf-8")
-        if not (args_text.startswith("(") and args_text.endswith(")")):
-            continue
-
-        new_args_text: str = f"({args_text[1:-1].strip()})"
-        if new_args_text != args_text:
-            edits.append(
-                (args.start_byte, args.end_byte, new_args_text.encode("utf-8"))
+            args_text: str = src[arguments.start_byte : arguments.end_byte].decode(
+                "utf-8"
             )
+            if not (args_text.startswith("(") and args_text.endswith(")")):
+                continue
+
+            new_args_text: str = f"({args_text[1:-1].strip()})"
+            if new_args_text != args_text:
+                edits.append(
+                    (
+                        arguments.start_byte,
+                        arguments.end_byte,
+                        new_args_text.encode("utf-8"),
+                    )
+                )
 
     return edits

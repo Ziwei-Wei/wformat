@@ -24,6 +24,12 @@ operator<<(
     }
 }
 
+enum class StartMode : uint8_t // the mode when the remote session window shows the first time
+{
+    WindowedMode,
+    FullscreenMode
+} startMode = StartMode::FullscreenMode;
+
 int
 main()
 {

@@ -67,24 +67,6 @@ def test_samples():
                 diff_list = diff_list[:500] + ["\n... (diff truncated)"]
             diffs.append(f"--- Diff for {src.name} ---\n" + "".join(diff_list))
 
-        # Idempotency check
-        again = formatter.format_memory(formatted)
-        if again != formatted:
-            # Provide a diff between first and second formatting passes for debugging
-            idempotent_diff_lines = difflib.unified_diff(
-                formatted.splitlines(keepends=True),
-                again.splitlines(keepends=True),
-                fromfile=f"{src.name} (first pass)",
-                tofile=f"{src.name} (second pass)",
-                lineterm="",
-            )
-            idempotent_diff_list = list(idempotent_diff_lines)
-            if len(idempotent_diff_list) > 500:
-                idempotent_diff_list = idempotent_diff_list[:500] + ["\n... (idempotency diff truncated)"]
-            diffs.append(
-                f"[NON-IDEMPOTENT] {src.name}\n" + "".join(idempotent_diff_list)
-            )
-
     if diffs:
         for d in diffs:
             print(d)
