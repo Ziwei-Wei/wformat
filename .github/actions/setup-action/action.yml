@@ -21,28 +21,10 @@ runs:
       if: runner.os == 'Windows'
       uses: microsoft/setup-msbuild@v2
 
-    - name: Configure (PowerShell invoking cmd, explicit cl.exe path)
+    - name: Configure (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
-      run: |
-        $vswhere = Join-Path ${Env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
-        if (-not (Test-Path $vswhere)) { throw "vswhere.exe not found at $vswhere" }
-        $vsroot = & $vswhere -latest -property installationPath
-        if (-not $vsroot) { throw 'Visual Studio installation path not found.' }
-        # Discover the cl.exe path (prefer Hostx64/x64)
-        $clPath = (& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find **/Hostx64/x64/cl.exe | Select-Object -First 1)
-        if (-not $clPath) { throw 'cl.exe not located via vswhere.' }
-        if (-not (Test-Path $clPath)) { throw "Resolved cl.exe path does not exist: $clPath" }
-        Write-Host "Using cl.exe: $clPath"
-        $vcvars = Join-Path $vsroot 'VC/Auxiliary/Build/vcvars64.bat'
-        if (-not (Test-Path $vcvars)) { throw "vcvars64.bat missing at $vcvars" }
-        # Build CMake command with explicit compiler paths
-        $cmakeCmd = 'cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug ' +
-                    '-DCMAKE_C_COMPILER="' + $clPath + '" ' +
-                    '-DCMAKE_CXX_COMPILER="' + $clPath + '"'
-        $cmdLine = '"' + $vcvars + '" && ' + $cmakeCmd
-        Write-Host "Running: $cmdLine"
-        cmd /c $cmdLine
+      run: cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug
 
     - name: CMake Configure (non Windows)
       if: runner.os != 'Windows'

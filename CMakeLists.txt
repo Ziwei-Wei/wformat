@@ -17,13 +17,13 @@ FetchContent_MakeAvailable(uncrustify)
 # MinGW: link libgcc/libstdc++/winpthread statically
 if(MINGW)
     message(STATUS "Warning Using MinGW")
-    target_link_options(uncrustify PRIVATE -static-libgcc -static-libstdc++ -static-libwinpthread)
+    target_link_options(uncrustify PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(
     uncrustify
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src/wformat/bin
+    RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/src/wformat/bin>
 )
 
 add_custom_target(

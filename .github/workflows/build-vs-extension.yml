@@ -41,21 +41,7 @@ jobs:
       - name: CMake Build
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          # Re-initialize MSVC developer environment so Ninja build sees correct INCLUDE/LIB (configure step ran in a different shell)
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          if (-not (Test-Path $vswhere)) { throw "vswhere.exe not found at $vswhere" }
-          $vsroot = & $vswhere -latest -property installationPath
-          if (-not $vsroot) { throw "Unable to locate Visual Studio installation" }
-          $vcvars = Join-Path $vsroot 'VC\Auxiliary\Build\vcvars64.bat'
-          if (-not (Test-Path $vcvars)) { throw "vcvars64.bat not found at $vcvars" }
-
-          $buildCmd = 'cmake --build build --parallel --config Debug --target pyinstaller_bundle_for_vs'
-          # Use cmd to run the batch file and then invoke the build
-          $cmdLine = '"' + $vcvars + '" && ' + $buildCmd
-          Write-Host "Invoking MSVC environment + build via: $cmdLine"
-          cmd /c $cmdLine
-          if ($LASTEXITCODE -ne 0) { throw "CMake build failed with exit code $LASTEXITCODE" }
+        run: cmake --build build --parallel --config Debug --target pyinstaller_bundle_for_vs
 
       - name: CMake Build
         if: runner.os != 'Windows'
