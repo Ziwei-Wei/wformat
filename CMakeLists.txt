@@ -16,6 +16,7 @@ FetchContent_MakeAvailable(uncrustify)
 
 # MinGW: link libgcc/libstdc++/winpthread statically
 if(MINGW)
+    message(STATUS "Warning Using MinGW")
     target_link_options(uncrustify PRIVATE -static-libgcc -static-libstdc++ -static-libwinpthread)
 endif()
 
@@ -24,15 +25,6 @@ set_target_properties(
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src/wformat/bin
 )
-
-# Ensure multi-config generators (e.g. Visual Studio) do NOT append the
-# configuration subdirectory (Debug/Release) by setting the per-config
-# output directory properties explicitly to the same path.
-foreach(_cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
-    set_target_properties(uncrustify PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${_cfg} ${CMAKE_SOURCE_DIR}/src/wformat/bin
-    )
-endforeach()
 
 add_custom_target(
     clang_format
