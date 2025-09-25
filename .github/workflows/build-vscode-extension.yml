@@ -42,11 +42,13 @@ jobs:
           python scripts/set_version.py "${{ github.event.inputs.version }}"
           echo "Version set to ${{ github.event.inputs.version }}"
 
-      - name: CMake Build
-        shell: bash
-        run: cmake --build build --parallel --config Debug --target python_project_setup
+      - name: CMake Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake --build build --parallel --config Debug --target pyinstaller_bundle
 
-      - name: CMake Build
+      - name: CMake Build (non Windows)
+        if: runner.os != 'Windows'
         shell: bash
         run: cmake --build build --parallel --config Debug --target pyinstaller_bundle
 
