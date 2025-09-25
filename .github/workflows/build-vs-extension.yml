@@ -38,9 +38,9 @@ jobs:
           python scripts/set_version.py "${{ github.event.inputs.version }}"
           echo "Version set to ${{ github.event.inputs.version }}"
 
-      - name: CMake Build (ALL)
+      - name: CMake Build
         shell: bash
-        run: cmake --build build --parallel --config Debug --target pyinstaller_bundle_for_vs
+        run: cmake --build build --config Debug --target pyinstaller_bundle_for_vs
 
       - name: Rename platform folder (append platform tag)
         shell: bash
