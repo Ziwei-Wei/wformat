@@ -14,6 +14,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(uncrustify)
 
+# MinGW: link libgcc/libstdc++/winpthread statically
+if(MINGW)
+    target_link_options(uncrustify PRIVATE -static-libgcc -static-libstdc++ -static-libwinpthread)
+endif()
+
 set_target_properties(
     uncrustify
     PROPERTIES
@@ -21,7 +26,7 @@ set_target_properties(
 )
 
 add_custom_target(
-    clang_format 
+    clang_format
     ALL
     COMMAND ${Python_EXECUTABLE} -m pip install --upgrade clang-format==20.1.8 --target ${CMAKE_BINARY_DIR}/_deps/clang-format-build
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -36,7 +41,7 @@ add_custom_target(
     install_python_deps
     ALL
     COMMAND ${Python_EXECUTABLE} -m pip install --upgrade ".[build,test]"
-    COMMAND ${Python_EXECUTABLE} -m pip install -e ".[build,test]"  # installs a .pth that points to ./src, make it editable
+    COMMAND ${Python_EXECUTABLE} -m pip install -e ".[build,test]" # installs a .pth that points to ./src, make it editable
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Installing Python dependencies via pip"
     VERBATIM

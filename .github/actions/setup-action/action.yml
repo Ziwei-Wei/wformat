@@ -17,10 +17,16 @@ runs:
     - name: Ensure CMake and Ninja are installed
       uses: lukka/get-cmake@latest
 
-    - name: CMake Configure
+    - name: Add msbuild to PATH
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v2
+
+    - name: CMake Configure (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: cmake -S . -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE:STRING=Debug
+
+    - name: CMake Configure (non Windows)
+      if: runner.os != 'Windows'
       shell: bash
       run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug
-
-    - name: CMake Build (ALL)
-      shell: bash
-      run: cmake --build build --parallel --config Debug --target python_project_setup
