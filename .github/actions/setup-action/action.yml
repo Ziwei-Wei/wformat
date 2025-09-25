@@ -26,7 +26,7 @@ runs:
       shell: pwsh
       run: |
         $vsroot = & "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
-        cmd /c "$vsroot\VC\Auxiliary\Build\vcvars64.bat" && cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug"
+        cmd /c "$vsroot\VC\Auxiliary\Build\vcvars64.bat" && cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug
 
     - name: CMake Configure (non Windows)
       if: runner.os != 'Windows'
