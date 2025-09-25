@@ -25,6 +25,15 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src/wformat/bin
 )
 
+# Ensure multi-config generators (e.g. Visual Studio) do NOT append the
+# configuration subdirectory (Debug/Release) by setting the per-config
+# output directory properties explicitly to the same path.
+foreach(_cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+    set_target_properties(uncrustify PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_${_cfg} ${CMAKE_SOURCE_DIR}/src/wformat/bin
+    )
+endforeach()
+
 add_custom_target(
     clang_format
     ALL
