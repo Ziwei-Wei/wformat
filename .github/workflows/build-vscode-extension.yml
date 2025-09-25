@@ -44,7 +44,11 @@ jobs:
 
       - name: CMake Build
         shell: bash
-        run: cmake --build build --config Debug --target pyinstaller_bundle
+        run: cmake --build build --parallel --config Debug --target python_project_setup
+
+      - name: CMake Build
+        shell: bash
+        run: cmake --build build --parallel --config Debug --target pyinstaller_bundle
 
       - name: Rename platform folder (append platform tag)
         shell: bash
